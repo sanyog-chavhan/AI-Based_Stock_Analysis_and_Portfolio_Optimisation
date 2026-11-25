@@ -16,10 +16,10 @@ def get_ai_insight(indicator_name, indicator_value, api_key):
     try:
         prompt = f"Explain the significance of a {indicator_name} value of {indicator_value} in stock trading in one sentence."
         response = client.chat.completions.create(
-            model="gpt-4-turbo",  # Use "gpt-3.5-turbo" for faster and cheaper results
+            model="gpt-4o-mini",    # Smaller model for faster response
             messages=[{"role": "system", "content": "You are a stock trading expert."},
                       {"role": "user", "content": prompt}],
-            temperature=0.5  # Moderate creativity
+            temperature=0.5
         )
 
         return response.choices[0].message.content.strip()
