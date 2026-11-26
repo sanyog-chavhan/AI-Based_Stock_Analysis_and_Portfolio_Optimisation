@@ -79,7 +79,4 @@ def calculate_indicators(data, ma_window, rsi_window, macd_fast, macd_slow, macd
     st.subheader("MACD Indicator")
     st.plotly_chart(fig_macd, use_container_width=True)  # MACD Chart
 
-
-    print(data.columns)
-
     return data
