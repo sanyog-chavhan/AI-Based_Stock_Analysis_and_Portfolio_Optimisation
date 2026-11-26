@@ -53,30 +53,30 @@ def calculate_indicators(data, ma_window, rsi_window, macd_fast, macd_slow, macd
     fig_candlestick.add_trace(go.Scatter(x=data.index, y=data['MA'], mode='lines', name=f"{ma_window}-day MA", line=dict(color="blue")))
     fig_candlestick.add_trace(go.Scatter(x=data.index, y=data['Upper_BB'], mode='lines', name="Upper BB", line=dict(color="purple", dash='dot')))
     fig_candlestick.add_trace(go.Scatter(x=data.index, y=data['Lower_BB'], mode='lines', name="Lower BB", line=dict(color="purple", dash='dot')))
-    fig_candlestick.update_layout(title="📈 Stock Price with Bollinger Bands & MA", xaxis_rangeslider_visible=True, template="plotly_dark", height=500, width=900)
+    fig_candlestick.update_layout(title="Stock Price with Bollinger Bands & MA", xaxis_rangeslider_visible=True, template="plotly_dark", height=500, width=900)
 
     # Create RSI Chart
     fig_rsi = go.Figure()
     fig_rsi.add_trace(go.Scatter(x=data.index, y=data['RSI'], mode='lines', name="RSI", line=dict(color="orange")))
     fig_rsi.add_trace(go.Scatter(x=data.index, y=[70]*len(data), mode='lines', name="Overbought (70)", line=dict(color="red", dash='dash')))
     fig_rsi.add_trace(go.Scatter(x=data.index, y=[30]*len(data), mode='lines', name="Oversold (30)", line=dict(color="green", dash='dash')))
-    fig_rsi.update_layout(title="📊 Relative Strength Index (RSI)", xaxis_rangeslider_visible=False, template="plotly_dark", height=500, width=900)
+    fig_rsi.update_layout(title="Relative Strength Index (RSI)", xaxis_rangeslider_visible=False, template="plotly_dark", height=500, width=900)
 
     # Create MACD Chart
     fig_macd = go.Figure()
     fig_macd.add_trace(go.Scatter(x=data.index, y=data['MACD'], mode='lines', name="MACD", line=dict(color="blue")))
     fig_macd.add_trace(go.Scatter(x=data.index, y=data['MACD_Signal'], mode='lines', name="MACD Signal", line=dict(color="red")))
     fig_macd.add_trace(go.Bar(x=data.index, y=data['MACD_Hist'], name="MACD Histogram", marker_color="purple"))
-    fig_macd.update_layout(title="📉 MACD Indicator", xaxis_rangeslider_visible=False, template="plotly_dark", height=500, width=900)
+    fig_macd.update_layout(title="MACD Indicator", xaxis_rangeslider_visible=False, template="plotly_dark", height=500, width=900)
 
     # Display Charts One Below Another**
-    st.subheader("📈 Stock Price with Bollinger Bands & Moving Averages")
+    st.subheader("Stock Price with Bollinger Bands & Moving Averages")
     st.plotly_chart(fig_candlestick, use_container_width=True)  # Stock Chart
 
-    st.subheader("📊 Relative Strength Index (RSI)")
+    st.subheader("Relative Strength Index (RSI)")
     st.plotly_chart(fig_rsi, use_container_width=True)  # RSI Chart
 
-    st.subheader("📉 MACD Indicator")
+    st.subheader("MACD Indicator")
     st.plotly_chart(fig_macd, use_container_width=True)  # MACD Chart
 
 

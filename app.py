@@ -34,7 +34,7 @@ def calculate_and_return_everything(data):
         st.stop()
 
     # AI Insights
-    st.subheader("💡 AI Insights")
+    st.subheader("AI Insights")
     last_row = indicator_data.iloc[-1]
 
     api_key = st.secrets["OPENAI_API_KEY"]  # Ensure API key is set
