@@ -70,11 +70,11 @@ def calculate_and_return_everything(data):
 
     st.subheader("Investment Signal")
     if signal == "Buy":
-        st.success(f"**Recommendation: {signal}** — {reason}")
+        st.success(f"**Recommendation: {signal}** - {reason}")
     elif signal == "Sell":
-        st.error(f"**Recommendation: {signal}** — {reason}")
+        st.error(f"**Recommendation: {signal}** - {reason}")
     else:
-        st.warning(f"**Recommendation: {signal}** — {reason}")
+        st.warning(f"**Recommendation: {signal}** - {reason}")
 
     
     return indicator_data
