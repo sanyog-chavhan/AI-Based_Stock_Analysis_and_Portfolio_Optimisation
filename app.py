@@ -112,6 +112,9 @@ if st.button("Analyse"):
         for ticker, weight in asset_weights.items():
             st.write(f"**{ticker}:** {weight:.4f}")
     else:
-        st.write("Could not perform portfolio optimisation.")
+        if len(close_prices.columns) < 2:
+            st.warning("Portfolio optimisation requires at least 2 assets. Please provide more tickers.")
+        else:
+            st.error("Could not perform portfolio optimisation. Please check the logs for more details.")
 
 print("Ensure that you have your OpenAI API set as environmental variable in Hugging Face Spaces for this script to work")

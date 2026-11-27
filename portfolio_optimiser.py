@@ -1,66 +1,82 @@
 import numpy as np
 from scipy.optimize import minimize
 
+TRADING_DAYS = 252
+MAX_ALLOCATION = 0.50   # Max 50% allocation per asset
+MIN_ALLOCATION = 0.05   # Min 5% allocation per asset
+
+
 def optimize_portfolio(data, risk_tolerance):
     """
-    Performs Modern Portfolio Theory (MPT) optimization with diversification constraints.
+    Mean-variance (Modern Portfolio Theory) optimisation along the efficient frontier.
+
+    The risk tolerance picks a point between the lowest-volatility portfolio
+    (risk_tolerance = 0) and the highest-return portfolio (risk_tolerance = 1)
+    that is possible under the allocation limits. The returned weights give the
+    highest expected return for that level of volatility.
 
     Args:
         data (pandas.DataFrame): DataFrame containing historical stock prices.
-        risk_tolerance (float): Risk tolerance level (higher value means higher risk).
+        risk_tolerance (float): Risk tolerance between 0 and 1 (higher means more risk).
 
     Returns:
-        dict: Dictionary containing optimized asset weights for a diversified portfolio.
+        dict: Optimised asset weights, or None if the optimisation fails.
     """
     try:
-        # Calculate daily returns & covariance matrix
+        risk_tolerance = min(max(float(risk_tolerance), 0.0), 1.0)
+
+        # Annualised returns & covariance matrix
         returns = data.pct_change().dropna()
-        mean_returns = returns.mean()
-        cov_matrix = returns.cov()
+        mean_returns = returns.mean().values * TRADING_DAYS
+        cov_matrix = returns.cov().values * TRADING_DAYS
 
         num_assets = len(mean_returns)
-        risk_free_rate = 0.01  # Example: Assume a 1% risk-free rate
+        if num_assets < 2:
+            print("Error optimising portfolio: at least 2 assets are needed.")
+            return None
 
-        # Objective Function: Maximize Sharpe Ratio
-        def negative_sharpe_ratio(weights):
-            portfolio_return = np.sum(mean_returns * weights)
-            portfolio_std_dev = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
-            sharpe_ratio = (portfolio_return - risk_free_rate) / portfolio_std_dev
-            return -sharpe_ratio
+        # Bounds: per-asset limits (the lower limit is relaxed if there are many assets)
+        lower = min(MIN_ALLOCATION, 1 / num_assets)
+        bounds = tuple((lower, MAX_ALLOCATION) for _ in range(num_assets))
+        weights_sum_to_one = {"type": "eq", "fun": lambda w: np.sum(w) - 1}
+        initial_weights = np.full(num_assets, 1 / num_assets)
 
-        # Constraints:
+        def portfolio_return(w):
+            return float(np.dot(mean_returns, w))
+
+        def portfolio_variance(w):
+            return float(np.dot(w, np.dot(cov_matrix, w)))
+
+        def solve(objective, constraints, x0):
+            result = minimize(
+                objective, x0, method="SLSQP",
+                bounds=bounds, constraints=constraints,
+            )
+            if not result.success:
+                raise ValueError(f"optimiser did not converge: {result.message}")
+            return result.x
+
+        # Lowest-risk portfolio (risk tolerance = 0)
+        min_var_weights = solve(portfolio_variance, [weights_sum_to_one], initial_weights)
+        min_vol = np.sqrt(portfolio_variance(min_var_weights))
+
+        # Highest-return portfolio (risk tolerance = 1)
+        max_ret_weights = solve(lambda w: -portfolio_return(w), [weights_sum_to_one], initial_weights)
+        max_vol = np.sqrt(portfolio_variance(max_ret_weights))
+
+        # Target volatility chosen by the risk tolerance
+        target_vol = min_vol + risk_tolerance * (max_vol - min_vol)
+        target_variance = target_vol ** 2 + 1e-10  # tiny tolerance for numerical stability
+
+        # Best expected return that stays within the target volatility
         constraints = [
-            {"type": "eq", "fun": lambda x: np.sum(x) - 1},  # Sum of weights must be 1
+            weights_sum_to_one,
+            {"type": "ineq", "fun": lambda w: target_variance - portfolio_variance(w)},
         ]
+        optimal_weights = solve(lambda w: -portfolio_return(w), constraints, min_var_weights)
 
-        # Set Diversification Constraints
-        max_allocation = 0.50  # Max 50% allocation per asset
-        min_assets_allocated = 2  # At least 2 assets must have nonzero allocation
-
-        def diversification_constraint(weights):
-            return np.count_nonzero(weights) - min_assets_allocated  # Enforce minimum assets
-
-        constraints.append({"type": "ineq", "fun": diversification_constraint})
-
-        # Set Bounds (Per-Asset Allocation Limits)
-        bounds = tuple((0.05, max_allocation) for _ in range(num_assets))  # Min 5%, Max 50%
-
-        # Initialise Equal Weights
-        initial_weights = np.array([1 / num_assets] * num_assets)
-
-        # Optimise Portfolio Allocation
-        optimized_results = minimize(
-            negative_sharpe_ratio,
-            initial_weights,
-            method="SLSQP",
-            bounds=bounds,
-            constraints=constraints,
-        )
-
-        # Extract Optimal Weights
-        asset_weights = dict(zip(data.columns, optimized_results.x))
-        return asset_weights
+        return dict(zip(data.columns, optimal_weights))
 
     except Exception as e:
-        print(f"Error optimizing portfolio: {e}")
+        print(f"Error optimising portfolio: {e}")
         return None
