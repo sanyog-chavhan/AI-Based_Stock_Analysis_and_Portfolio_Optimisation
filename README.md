@@ -1,154 +1,134 @@
-# AI‑Based Stock Analysis & Portfolio Optimisation App
+# AI-Based Stock Analysis & Portfolio Optimisation
 
-A Streamlit app that fetches market data, computes technical indicators (MA, RSI, MACD, Bollinger Bands), generates short AI insights, and produces a clear **Buy / Hold / Sell** signal per ticker. It can also run a simple **portfolio optimisation** over selected assets.
+A Streamlit web app that downloads stock market data, calculates common technical indicators, adds a short AI-written explanation for each one, and gives a Buy / Hold / Sell signal for every stock you enter. It can also suggest how to split money across several stocks.
 
-> **Demo:** If you deployed this on Hugging Face Spaces, open your Space URL:  
-> `https://huggingface.co/spaces/<your-username>/<your-space-name>`  
-> Replace the placeholders with your actual Space path.
+**Live demo:** https://huggingface.co/spaces/sanyog16/AI-Based_Stock_Analysis_and_Portfolio_Optimisation
 
-
-## ✨ What you can do
-
-- Enter 1..N tickers (e.g. `TSLA, AAPL` or `RELIANCE.NS, TCS.NS`)
-- Choose date range and indicator windows and risk tolerance
-- See charts + indicator values
-- Read **AI one‑line insights** for MA/BB/RSI/MACD (optional; requires OpenAI key)
-- Get a **color‑coded investment signal** (Buy / Hold / Sell) with reasons
-- Optimise a simple **equal‑risk / target‑risk** allocation across your selection
-
-> **Disclaimer:** This app is for **educational** use only. **Not** financial advice. Markets are risky; do your own research.
+> **Disclaimer:** This app is for learning only. It is not financial advice. Markets are risky, so do your own research.
 
 
-## 🧱 Project structure
+## What the app does
 
-```
-.
-├── app.py                          # Streamlit UI
-├── data_loader.py                  # Robust price downloader using yfinance API
-├── indicators.py                   # Indicator calculations and plots using Plotly
-├── ai_insights.py                  # get_ai_insight() wrapper for OpenAI one‑liners
-├── investment_signal.py            # get_investment_signal() – rule‑based Buy/Hold/Sell
-├── portfolio_optimiser.py          # optimise weights from closing price data
-└── requirements.txt                # dependencies (see variants below)
-```
+1. You enter one or more stock tickers, for example `TSLA, AAPL, DELL, AMD`.
+2. You choose a date range, the indicator settings and your risk tolerance.
+3. The app shows:
+   - Charts for stock price, RSI and MACD, with the indicator values.
+   - A one-sentence AI explanation of each indicator (Moving Average, Bollinger Bands, RSI, MACD).
+   - A colour-coded Buy / Hold / Sell signal, with the reasons behind it.
+   - A suggested allocation across your selected stocks, based on your risk tolerance.
+
+The AI explanations need an OpenAI API key. Everything else works from market data alone.
 
 
-## 🛠️ Local setup
+## How to use it
 
-### 1) Create & activate a virtual environment
+1. Open the live demo, or run the app locally (see below).
+2. Type your tickers, separated by commas. Use the ticker as it appears on Yahoo Finance. Stocks outside the US need a suffix, such as `.NS` for India's NSE.
+3. Pick your date range and settings, then run the analysis.
+4. Read the charts, the explanations and the signal for each stock.
+
+
+## Run it on your own computer
+
+You need Python 3 installed.
+
+**1. Get the code and open the project folder.**
+
+**2. Create and activate a virtual environment.**
 ```bash
-python -m venv .venv
+python -m venv venv
+
+# macOS / Linux
+source venv/bin/activate
+
 # Windows
-.venv\Scripts\activate
-# macOS/Linux
-source .venv/bin/activate
+venv\Scripts\activate
 ```
 
-### 2) Install dependencies
-
-**If your Python is 3.11+ (Windows/macOS/Linux):**
-```txt
-# requirements.txt
-streamlit
-yfinance
-pandas
-numpy==1.23.5
-scipy
-plotly
-openai
-```
-
-Then install:
+**3. Install the dependencies.**
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3) (Optional) Add your OpenAI API key
-- **Env var** (works everywhere):
-  ```bash
-  # Windows (PowerShell)
-  setx OPENAI_API_KEY "sk-..."
-  # macOS/Linux (bash/zsh)
-  export OPENAI_API_KEY="sk-..."
-  ```
-- **Streamlit secrets** (local): create `.streamlit/secrets.toml`
-  ```toml
-  OPENAI_API_KEY = "sk-..."
-  ```
+**4. Add your OpenAI API key.**
 
-> Without a key, the app still runs – it just skips AI text.
+Create a file called `.streamlit/secrets.toml` in the project folder:
+```toml
+OPENAI_API_KEY = "sk-..."
+```
+Keep this file private and never upload it to GitHub. The app currently reads the key from this file, so it needs to exist before you run the app.
 
-### 4) Run the app
+**5. Start the app.**
 ```bash
 python -m streamlit run app.py
 ```
-Then open the local URL (usually http://localhost:8501).
+Then open http://localhost:8501 in your browser.
 
 
-## 🚀 Hugging Face Spaces (demo & reproduce)
+## Settings and indicators
 
-1. Create a new **Space → SDK: Streamlit**.
-2. Upload your project files and **requirements.txt**.
-3. For Spaces’ default **Python 3.10** image, use this `requirements.txt` (pinned to stable builds):
-   ```txt
-    streamlit
-    yfinance
-    pandas
-    numpy==1.23.5
-    scipy
-    plotly
-    openai
-   ```
-4. Set your `OPENAI_API_KEY` in **Settings → Variables & secrets** (optional).
-5. Click **Restart** / **Rebuild**. Your app will be live at:  
-   `https://huggingface.co/spaces/<your-username>/<your-space-name>`
+| Indicator | What it shows | Default |
+|---|---|---|
+| Moving Average (MA) | The average price over a set number of days, which smooths out short-term swings | Adjustable |
+| RSI | Momentum. Above 70 often means overbought, and below 30 often means oversold | 14 days |
+| MACD | Trend and momentum, based on two moving averages and a signal line | 12, 26, 9 |
+| Bollinger Bands | A band around the average price that widens when the price is volatile | 20 days, 2 standard deviations |
+| Risk tolerance | A number from 0 to 1 that you set. It affects the suggested allocation | You choose |
 
 
-## 📈 Indicators & Signal
+## How the Buy / Hold / Sell signal works
 
-**Indicators:**
-- **MA** – Simple moving average (window configurable)
-- **RSI** – Momentum (14 default)
-- **MACD** – Trend / momentum (12, 26, 9 default)
-- **Bollinger Bands** – Volatility bands (20, 2 default)
-- **Risk Tolerance** – User Risk Tolerance between (0, 1)
+The signal is a simple point score. It is a transparent rule of thumb, not a prediction.
 
-**Signal (rule‑based):**
-- Points for RSI (<30 oversold → +2; >70 overbought → −2)
-- Points for MACD (>0 bullish → +1; <0 bearish → −1)
-- Points for Trend (Close vs MA: above → +1; below → −1)
-- Points for Bollinger extremes (below lower band → +1; above upper → −1)
-- Total ≥ +2 → **Buy**; ≤ −2 → **Sell**; else **Hold**
+| Check | Points |
+|---|---|
+| RSI below 30 (oversold) | +2 |
+| RSI above 70 (overbought) | -2 |
+| MACD above 0 (bullish) | +1 |
+| MACD below 0 (bearish) | -1 |
+| Price above the moving average | +1 |
+| Price below the moving average | -1 |
+| Price below the lower Bollinger Band | +1 |
+| Price above the upper Bollinger Band | -1 |
 
-> This is a transparent heuristic. Improve realism by adding **regime filters**, **confirmations**, **ATR‑based risk mgmt**, and a **walk‑forward backtest**.
-
-
-## 🧪 Reproducibility checklist
-
-- Use the pinned **requirements.txt** above.
-- Fix a random seed where applicable (optimiser, if stochastic).
-- Record the exact tickers and date range in your test.
-- Export the final results (weights/metrics) with a timestamp for audit.
+A total of +2 or more gives **Buy**. A total of -2 or less gives **Sell**. Anything in between gives **Hold**.
 
 
-## 🩹 Troubleshooting
+## Project files
 
-- **`streamlit: command not found` (Windows)**  
-  Activate your venv and run via module:
-  ```bash
-  .venv\Scripts\activate
-  python -m streamlit run app.py
-  ```
+| File | Purpose |
+|---|---|
+| `app.py` | The Streamlit user interface |
+| `data_loader.py` | Downloads price data from Yahoo Finance (yfinance) |
+| `indicators.py` | Calculates the indicators and draws the Plotly charts |
+| `ai_insights.py` | Asks OpenAI for the one-sentence explanations |
+| `investment_signal.py` | Works out the Buy / Hold / Sell signal |
+| `portfolio_optimiser.py` | Calculates the suggested portfolio weights |
+| `requirements.txt` | The Python packages the app needs |
 
-- **OpenAI key not found**  
-  Set `OPENAI_API_KEY` as an env var or in `.streamlit/secrets.toml`. The app handles missing keys gracefully.
+
+## Troubleshooting
+
+**`streamlit: command not found`**
+Activate your virtual environment, then start the app with `python -m streamlit run app.py`.
+
+**"No secrets found" error**
+The file `.streamlit/secrets.toml` is missing. Create it as shown in step 4 above.
+
+**The AI explanations show an error message**
+- "Invalid OpenAI API key": check the key in `secrets.toml`.
+- "Rate limit exceeded": your OpenAI account may be out of credit, or you are sending too many requests. Check your billing page on the OpenAI platform.
+
+**`pip install` fails when building numpy**
+You are probably using a very new Python version with an old numpy. Make sure `requirements.txt` lists `numpy` without a version pin, or use an older Python version.
 
 
-## 🔐 Security & data usage
+## Security and data
 
-- Do **not** commit secrets (API keys). Use environment variables or platform secrets.
-- This project fetches public market data for research and demo purposes only.
+- Never commit your API key. Keep it in `.streamlit/secrets.toml`, and add that file to `.gitignore`.
+- The app only uses public market data and is meant for research and demonstration.
 
-## 📜 License
 
-MIT — free to use for learning and personal projects. If you build a commercial product, make sure your data sources comply with their respective terms.
+## Licence
+
+MIT. You are free to use this for learning and personal projects. If you build a commercial product, check that your data sources allow it.
