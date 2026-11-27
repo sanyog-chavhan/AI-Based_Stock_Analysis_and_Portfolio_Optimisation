@@ -71,12 +71,12 @@ def calculate_indicators(data, ma_window, rsi_window, macd_fast, macd_slow, macd
 
     # Display Charts One Below Another**
     st.subheader("Stock Price with Bollinger Bands & Moving Averages")
-    st.plotly_chart(fig_candlestick, use_container_width=True)  # Stock Chart
+    st.plotly_chart(fig_candlestick, width="stretch")  # Stock Chart
 
     st.subheader("Relative Strength Index (RSI)")
-    st.plotly_chart(fig_rsi, use_container_width=True)  # RSI Chart
+    st.plotly_chart(fig_rsi, width="stretch")  # RSI Chart
 
     st.subheader("Moving Average Convergence Divergence (MACD)")
-    st.plotly_chart(fig_macd, use_container_width=True)  # MACD Chart
+    st.plotly_chart(fig_macd, width="stretch")  # MACD Chart
 
     return data
